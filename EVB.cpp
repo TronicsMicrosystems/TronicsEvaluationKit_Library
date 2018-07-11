@@ -28,9 +28,9 @@
 /**
    @file EVB.cpp
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 29 Sept 2017
+   @date 11 July 2018
    @brief File containing source code for EvalutationTool library.
-   @see https://github.com/TronicsMicrosystems/Firmware-2.2
+   @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
 
 #include "EVB.h"
@@ -64,6 +64,18 @@ uint16_t TransfertTime = 77;
 /////////////////////////////////////////////////////////////
 
 void EVBClass::Init(Serial_ ArduinoOutput)	{	
+	Startup_Initialization();
+	TransfertTime = 76; 
+	ArduinoOutput.begin(115200);          // Initialisation of USB communication
+}
+
+void EVBClass::Init(Uart ArduinoOutput)	{
+	Startup_Initialization();
+	TransfertTime = 77;
+	ArduinoOutput.begin(921600);          // Initialisation of Serial communication
+}
+
+void EVBClass::Startup_Initialization(void) {
 	// Hardware test to know if the board is an EVB 2.0, 2.1 or 3.0
 	SPI.begin();                          // Initialisation of SPI communication
 	SPI.setDataMode(SPI_MODE0);           // Set SPI communication MODE0 : CPOL=0 CPHA=0
@@ -79,7 +91,7 @@ void EVBClass::Init(Serial_ ArduinoOutput)	{
 	delay(100);
  	if ((TestEVB1 != 0) && (TestEVB1 != 0xFFFFFFFF))
 	{
-	 	EVB_Version = 20; //20;
+	 	EVB_Version = 20;
 	}
 	else
 	{
@@ -153,8 +165,6 @@ void EVBClass::Init(Serial_ ArduinoOutput)	{
 		VDDIO_Pin = 13;                 // Define VDDIO Pin number (9)
 	}
 
-	TransfertTime = 76; 
-  
 	pinMode(ST_Pin, INPUT);               // Set ST (Self Test) Pin as Input
 	pinMode(FLCK_Pin, INPUT);             // Set FCLK (Clock Frequency) Pin as Input
 	pinMode(DRDY_Pin, INPUT);             // Set DRDY (Data Ready) Pin as Input
@@ -180,96 +190,8 @@ void EVBClass::Init(Serial_ ArduinoOutput)	{
       ASIC_Version = 2;
       digitalWrite(VDDIO_Pin, HIGH);      // Set VDDIO pin to High Level (Active High)
     }
-	
-	ArduinoOutput.begin(115200);          // Initialisation of USB communication
 }
 
-void EVBClass::Init(Uart ArduinoOutput)	{
-  // Hardware test to know if the board is an EVB 2.0, 2.1 or 3.0
-	pinMode(26, INPUT);               
-	int test_EVB = digitalRead(26);
-	
-	if (test_EVB == 1)
-	{
-		EVB_Version = 20; //20;
-	}
-	else
-	{	
-		pinMode(12, INPUT);               
-		int test_EVB2 = digitalRead(12);
-		if (test_EVB2 == 1)
-		{
-			EVB_Version = 21; //20;
-		}
-		else
-		{		
-			EVB_Version = 30; //30;
-		}
-	}
-
-	if (EVB_Version == 20)
-	{
-		ST_Pin = 26;                      // Define ST (Self Test) Pin number (26)
-		EN_Pin = 13;                      // Define En (Enable) Pin number (13 = LED)
-		FLCK_Pin = 4;                     // Define FLCK (Clock frequency) Pin number (4)
-		VDDIO_Pin = 27;                   // Define VVDIO Pin number (27)
-		CSB_Pin = 25;                     // Define CSB (SPI Chip select) number (25)	
-	}
-	else if (EVB_Version == 21)
-	{
-		ST_Pin = 12;                      // Define ST (Self Test) Pin number (12)
-		EN_Pin = 11;                      // Define En (Enable) Pin number (11)
-		FLCK_Pin = 10;                    // Define FLCK (Clock frequency) Pin number (10)
-		VDDIO_Pin = 9;                    // Define VVDIO Pin number (9)
-		CSB_Pin = 8;                      // Define CSB (SPI Chip select) number (8)
-	}
-
-	else if (EVB_Version == 30)
-	{
-		EN_Pin = 8;                     // Define En (Enable) Pin number (8)
-		ST_Pin = 9;                     // Define ST (Self Test) Pin number (9)
-		FLCK_Pin = 10;                  // Define FLCK (Clock frequency) Pin number (10)
-		CSB_Pin = 11;                   // Define CSB (SPI Chip select) Pin number (11)
-		DRDY_Pin = 12;					// Define DRDY (Data Ready) Pin number (12)
-		VDDIO_Pin = 13;                 // Define VDDIO Pin number (9)
-	}
-
-	TransfertTime = 77;
-	
-	SPI.begin();                          // Initialisation of SPI communication
-	SPI.setDataMode(SPI_MODE0);           // Set SPI communication MODE0 : CPOL=0 CPHA=0
-	SPI.setClockDivider(SPI_CLOCK_DIV16); // Set SPI Frequency at 1 MHz
-	SPI.setBitOrder(MSBFIRST);            // Set bit order : Most Significant Bit First  
-  
-	pinMode(ST_Pin, INPUT);               // Set ST (Self Test) Pin as Input
-	pinMode(FLCK_Pin, INPUT);             // Set FCLK (Clock Frequency) Pin as Input
-	pinMode(DRDY_Pin, INPUT);             // Set DRDY (Data Ready) Pin as Input
-	pinMode(EN_Pin, OUTPUT);              // Set EN (Enable) Pin as Output
-	pinMode(VDDIO_Pin, OUTPUT);           // Set VDDIO Pin as Output
-	pinMode(CSB_Pin, OUTPUT);             // Set CSB (SPI Chip select) Pin as Output
-	pinMode(LED_Pin, OUTPUT);             // Set LED Pin as Output
-
-	digitalWrite(EN_Pin, HIGH);           // Set EN (Enable) pin to High Level (Active Low)
-	digitalWrite(CSB_Pin, HIGH);          // Set CSB (SPI Chip select) pin to High Level (Active Low)
-    digitalWrite(VDDIO_Pin, LOW);         // Set VDDIO pin to High Level (Active Low)
-
-	delay(1000);
-		
-	uint32_t TestASIC1 = ReadSR(0x00);
-    uint32_t TestASIC2 = ReadSR(0x40);
-
-    if ((TestASIC1 == TestASIC2) && (TestASIC1 != 0)) {
-      ASIC_Version = 1;
-      digitalWrite(VDDIO_Pin, LOW);       // Set VDDIO pin to Low Level (Active High)
-    }
-    else {
-      ASIC_Version = 2;
-      digitalWrite(VDDIO_Pin, HIGH);      // Set VDDIO pin to High Level (Active High)
-    }
-	
-	ArduinoOutput.begin(921600);          // Initialisation of USB communication
-
-}
 /////////////////////////////////////////////////////////////
 //                                                         //
 //        ANGULAR RATE / ACCELERATION AND TEMPERATUE       //

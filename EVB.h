@@ -28,8 +28,8 @@
 /**
    @file EVB.h
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 29 Sept 2017
-   @brief File containing header code for EvalutationTool_2_2 library.
+   @date 11 July 2018
+   @brief File containing header code for EvalutationTool library.
    @see https://github.com/TronicsMicrosystems/Firmware-2.2
 */
 
@@ -59,7 +59,8 @@ extern uint16_t  TransfertTime;
 class EVBClass {
 public:	
 	static void Init(Serial_ ArduinoOutput);
-	static void Init(Uart ArduinoOutput);
+  static void Init(Uart ArduinoOutput);
+  static void Startup_Initialization(void);
 	
 	static void ReadOutput(uint8_t Buffer_Sensor[], uint8_t Buffer_Size);
 	
@@ -68,9 +69,9 @@ public:
 	
 	static uint32_t ReadMTP(uint32_t Address);	
 	static void ProgMTP(uint32_t Address);
-	static void CopyMTP(uint32_t Address);
-	
-	static float ReadFCLK(uint32_t sampleTime);	
+  static void CopyMTP(uint32_t Address);	
+
+  static float ReadFCLK(uint32_t sampleTime);	
 };
 
 extern EVBClass EVB;
