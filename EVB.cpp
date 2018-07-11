@@ -26,14 +26,14 @@
 ****************************************************************************/
 
 /**
-   @file EVB_2_2.cpp
+   @file EVB.cpp
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
    @date 29 Sept 2017
-   @brief File containing source code for EvalutationTool_2_2 library.
+   @brief File containing source code for EvalutationTool library.
    @see https://github.com/TronicsMicrosystems/Firmware-2.2
 */
 
-#include "EVB_2_2.h"
+#include "EVB.h"
 #include "SPI.h"
 
 static volatile uint32_t RSYST;

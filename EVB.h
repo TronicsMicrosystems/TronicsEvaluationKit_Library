@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /**
-   @file EVB_2_2.h
+   @file EVB.h
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
    @date 29 Sept 2017
    @brief File containing header code for EvalutationTool_2_2 library.
@@ -35,8 +35,8 @@
 
 #include <Arduino.h>
 
-#ifndef EVB_2_2_h
-#define EVB_2_2_h
+#ifndef EVB_h
+#define EVB_h
 
 #ifndef ARDUINO_ARCH_SAMD              // Be sure that you choose Arduino M0, M0 Pro or Zero board in Tools => Board
 	#error "You must choose Arduino M0, M0 Pro and Zero in Tools menu => Board"
