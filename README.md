@@ -24,7 +24,7 @@ Arduino M0 Firmware for Tronic's Microsytems Evaluation Kit
  
 
 8.	Select “TronicsEvaluationKit_Library” in the “Arduino Firmware & IDE” folder into the USB flash drive.
-9.	Now, you can open “EvaluationTool_2_1” firmware” in the Examples menu. 
+9.	Now, you can open “EvaluationTool” firmware” in the Examples menu. 
 
 10.	Upload the program: Simply click on the "Upload" button in the environment. Wait a few seconds, and you should see the RX and TX LEDs on the board flashing. If the upload is successful, the message "Done uploading." will appear in the status bar at the bottom of the window. 
 
