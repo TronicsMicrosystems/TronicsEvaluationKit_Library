@@ -1,4 +1,4 @@
-# Tronics Evaluation Kit Library 2.1
+# Tronics Evaluation Kit Library 2.2
 Tronics Microsystems Evaluation Board library for Arduino M0 board with GYPRO® or AXO® MEMS Sensors.
 
 ![alt tag](https://preview.ibb.co/bYgYRd/Maquette_fond_blanc.png)
@@ -24,7 +24,7 @@ Arduino M0 Firmware for Tronic's Microsytems Evaluation Kit
  
 
 8.	Select “TronicsEvaluationKit_Library” in the “Arduino Firmware & IDE” folder into the USB flash drive.
-9.	Now, you can open “EvaluationTool_2_1” firmware” in the Examples menu. 
+9.	Now, you can open “EvaluationTool” firmware” in the Examples menu. 
 
 10.	Upload the program: Simply click on the "Upload" button in the environment. Wait a few seconds, and you should see the RX and TX LEDs on the board flashing. If the upload is successful, the message "Done uploading." will appear in the status bar at the bottom of the window. 
 
@@ -33,7 +33,7 @@ Arduino M0 Firmware for Tronic's Microsytems Evaluation Kit
 > NOW YOUR ARDUINO M0 BOARD IS PROGRAMMED AND READY TO BE USED WITH TRONICS EVALUATION TOOL.
 
 ## Usage
-This Firmware is optimised forEvaluation Tool 2.1 software.
+This Firmware is optimised forEvaluation Tool 2.2 software.
 
 ## History
-11/08/2018 - Creation of the Tronic's Microsystems GitHub repository.
+28/09/2017 - Creation of the Tronic's Microsystems GitHub repository.

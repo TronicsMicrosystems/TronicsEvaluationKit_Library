@@ -5,7 +5,7 @@
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
-                 for Evaluation Tool 2.1             //  //////////
+                 for Evaluation Tool 2.2             //  //////////
 
      Copyright (C) 2017 by Tronics Microsystems
 
@@ -26,14 +26,14 @@
 ****************************************************************************/
 
 /**
-   @file EVP.cpp
+   @file EVB_2_2.cpp
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
    @date 29 Sept 2017
-   @brief File containing source code for EvalutationTool_2_1 library.
-   @see https://github.com/TronicsMicrosystems/Firmware-2.1
+   @brief File containing source code for EvalutationTool_2_2 library.
+   @see https://github.com/TronicsMicrosystems/Firmware-2.2
 */
 
-#include "EVB.h"
+#include "EVB_2_2.h"
 #include "SPI.h"
 
 static volatile uint32_t RSYST;
@@ -64,25 +64,56 @@ uint16_t TransfertTime = 77;
 /////////////////////////////////////////////////////////////
 
 void EVBClass::Init(Serial_ ArduinoOutput)	{	
-  // Hardware test to know if the board is an EVB 2.0, 2.1 or 3.0
-	pinMode(26, INPUT);               
-	int test_EVB = digitalRead(26);
-	
-	if (test_EVB == 1)
+	// Hardware test to know if the board is an EVB 2.0, 2.1 or 3.0
+	SPI.begin();                          // Initialisation of SPI communication
+	SPI.setDataMode(SPI_MODE0);           // Set SPI communication MODE0 : CPOL=0 CPHA=0
+	SPI.setClockDivider(SPI_CLOCK_DIV16); // Set SPI Frequency at 1 MHz
+	SPI.setBitOrder(MSBFIRST);            // Set bit order : Most Significant Bit First 
+
+	CSB_Pin = 25;
+	pinMode(CSB_Pin, OUTPUT);
+	digitalWrite(CSB_Pin, HIGH);
+
+	uint32_t TestEVB1 = ReadSR(0);
+
+	delay(100);
+ 	if ((TestEVB1 != 0) && (TestEVB1 != 0xFFFFFFFF))
 	{
-		EVB_Version = 20; //20;
+	 	EVB_Version = 20; //20;
 	}
 	else
-	{	
-		pinMode(12, INPUT);               
-		int test_EVB2 = digitalRead(12);
-		if (test_EVB2 == 1)
+	{
+		CSB_Pin = 8;
+		EN_Pin = 11;
+
+		pinMode(CSB_Pin, OUTPUT);
+		pinMode(EN_Pin, OUTPUT);
+
+		digitalWrite(CSB_Pin, HIGH);           // Set EN (Enable) pin to High Level (Active Low)
+		digitalWrite(EN_Pin, HIGH);          // Set CSB (SPI Chip select) pin to High Level (Active Low)
+
+		delay(500);
+		uint32_t TestEVB2 = ReadSR(0);
+
+		if ((TestEVB2 != 0) && (TestEVB2 != 0xFFFFFFFF))
 		{
 			EVB_Version = 21; //21;
 		}
 		else
-		{		
-			EVB_Version = 30; //30;
+		{
+			delay(500);
+			CSB_Pin = 11;
+			EN_Pin = 8;
+
+			uint32_t TestEVB3 = ReadSR(0);
+			if ((TestEVB3 != 0) && (TestEVB3 != 0xFFFFFFFF))
+			{
+				EVB_Version = 30; //21;
+			}
+			else
+			{
+				EVB_Version = 100; //error
+			}
 		}
 	}
 
@@ -112,13 +143,17 @@ void EVBClass::Init(Serial_ ArduinoOutput)	{
 		DRDY_Pin = 12;					// Define DRDY (Data Ready) Pin number (12)
 		VDDIO_Pin = 13;                 // Define VDDIO Pin number (9)
 	}
+	else if (EVB_Version == 100) 		//socket
+	{
+		EN_Pin = 8;                     // Define En (Enable) Pin number (8)
+		ST_Pin = 9;                     // Define ST (Self Test) Pin number (9)
+		FLCK_Pin = 10;                  // Define FLCK (Clock frequency) Pin number (10)
+		CSB_Pin = 25;                   // Define CSB (SPI Chip select) Pin number (11)
+		DRDY_Pin = 12;					// Define DRDY (Data Ready) Pin number (25)
+		VDDIO_Pin = 13;                 // Define VDDIO Pin number (9)
+	}
 
-	TransfertTime = 76;
-	
-	SPI.begin();                          // Initialisation of SPI communication
-	SPI.setDataMode(SPI_MODE0);           // Set SPI communication MODE0 : CPOL=0 CPHA=0
-	SPI.setClockDivider(SPI_CLOCK_DIV16); // Set SPI Frequency at 1 MHz
-	SPI.setBitOrder(MSBFIRST);            // Set bit order : Most Significant Bit First  
+	TransfertTime = 76; 
   
 	pinMode(ST_Pin, INPUT);               // Set ST (Self Test) Pin as Input
 	pinMode(FLCK_Pin, INPUT);             // Set FCLK (Clock Frequency) Pin as Input
@@ -146,7 +181,7 @@ void EVBClass::Init(Serial_ ArduinoOutput)	{
       digitalWrite(VDDIO_Pin, HIGH);      // Set VDDIO pin to High Level (Active High)
     }
 	
-	ArduinoOutput.begin(115200);          // Initialisation of USB communication	
+	ArduinoOutput.begin(115200);          // Initialisation of USB communication
 }
 
 void EVBClass::Init(Uart ArduinoOutput)	{
@@ -171,7 +206,7 @@ void EVBClass::Init(Uart ArduinoOutput)	{
 			EVB_Version = 30; //30;
 		}
 	}
-	
+
 	if (EVB_Version == 20)
 	{
 		ST_Pin = 26;                      // Define ST (Self Test) Pin number (26)
@@ -233,6 +268,7 @@ void EVBClass::Init(Uart ArduinoOutput)	{
     }
 	
 	ArduinoOutput.begin(921600);          // Initialisation of USB communication
+
 }
 /////////////////////////////////////////////////////////////
 //                                                         //
@@ -249,7 +285,6 @@ void EVBClass::ReadOutput(uint8_t Buffer_Sensor[], uint8_t Buffer_Size) {
 	for (uint8_t i=0 ; i < Buffer_Size ; i++) {
     Buffer_Sensor[i] = SPI.transfer(0);
   }
-
 	digitalWrite(CSB_Pin, HIGH);            // Set CS to High Level (Inactive)
 }
 
