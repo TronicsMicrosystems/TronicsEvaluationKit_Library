@@ -70,8 +70,6 @@ public:
 	static uint32_t ReadMTP(uint32_t Address);	
 	static void ProgMTP(uint32_t Address);
   static void CopyMTP(uint32_t Address);	
-
-  static float ReadFCLK(uint32_t sampleTime);	
 };
 
 extern EVBClass EVB;

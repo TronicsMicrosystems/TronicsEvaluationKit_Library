@@ -38,11 +38,6 @@
 
 static volatile uint32_t RSYST;
 static volatile uint32_t RMTP;
-static volatile float FDRIVE;
-
-static uint32_t FCLK_firstPulseTime;        // Define global variable FCLK measure
-static uint32_t FCLK_lastPulseTime;         // Define global variable FCLK measure
-static uint32_t FCLK_numPulses;             // Define global variable FCLK measure
 
 uint16_t ASIC_Version = 0;
 uint16_t EVB_Version = 0;
@@ -329,35 +324,4 @@ void EVBClass::CopyMTP(uint32_t Address) {
 	digitalWrite(CSB_Pin, HIGH);	// Set CS to high Level (Inactive)
 }
 
-/////////////////////////////////////////////////////////////
-//                                                         //
-//                   MEASURE OF FCLK                       //
-//             (2 FUNCTIONS : ISR + MEASURE)               //
-//                                                         //
-/////////////////////////////////////////////////////////////
-
-void isr(void) {  // Interrupt function
-  unsigned long now = micros();  // Start local stopwatch
-
-  if (FCLK_numPulses == 1) {     // ISR asked
-    FCLK_firstPulseTime = now;   // Detect first Rising edge of clock
-  }
-
-  else  {
-    FCLK_lastPulseTime = now;    // Detect last Rising edge of clock
-  }
-
-  FCLK_numPulses += 1;           // Increase number of pulse counter
-}
-
-
-float EVBClass::ReadFCLK(uint32_t sampleTime) {
-	FCLK_numPulses = 0;                       // Initialize numbers of pulses variable
-	attachInterrupt(FLCK_Pin, isr, RISING);   // Attach interrupt to FLCK_Pin
-	delay(sampleTime);                        // Time of the measure
-	detachInterrupt(FLCK_Pin);                // Detach interrupt to FLCK_Pin
-	FDRIVE = (FCLK_numPulses < 3) ? 0 : (1000000.0 * (float)(FCLK_numPulses - 2)) / (float)(FCLK_lastPulseTime - FCLK_firstPulseTime); // Calculate frequency in Hz according numPulses counter
-	return (FDRIVE);
-  }
-  
 EVBClass EVB;
