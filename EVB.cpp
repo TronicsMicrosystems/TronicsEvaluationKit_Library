@@ -36,9 +36,6 @@
 #include "EVB.h"
 #include "SPI.h"
 
-static volatile uint32_t RSYST;
-static volatile uint32_t RMTP;
-
 uint16_t ASIC_Version = 0;
 uint16_t EVB_Version = 0;
 
@@ -60,15 +57,16 @@ uint16_t TransfertTime = 77;
 
 void EVBClass::Init(Serial_ ArduinoOutput)	{	
 	Startup_Initialization();
-	TransfertTime = 76; 
+	TransfertTime = 76; //76 M0
 	ArduinoOutput.begin(115200);          // Initialisation of USB communication
+	while(!ArduinoOutput);
 }
 
-void EVBClass::Init(Uart ArduinoOutput)	{
+/*void EVBClass::Init(Uart ArduinoOutput)	{
 	Startup_Initialization();
 	TransfertTime = 77;
 	ArduinoOutput.begin(921600);          // Initialisation of Serial communication
-}
+}*/
 
 void EVBClass::Startup_Initialization(void) {
 	// Hardware test to know if the board is an EVB 2.0, 2.1 or 3.0
@@ -222,19 +220,21 @@ uint32_t EVBClass::ReadSR(uint32_t Address) {
 
 	delay(4);
 
+	uint8_t rspi[4] = {};
+
 	digitalWrite(CSB_Pin, LOW);           // Set CS to Low Level (Active)
 	SPI.transfer(0x58);                   // Send 0x5 (read command) and 0x8 (SPI register address) -> 0x58
-	uint8_t RSYST0 = SPI.transfer(0x00);     // Read first incoming byte
-	uint8_t RSYST1 = SPI.transfer(0x00);     // Read second incoming byte
-	uint8_t RSYST2 = SPI.transfer(0x00);     // Read third incoming byte
-	uint8_t RSYST3 = SPI.transfer(0x00);     // Read last incoming byte
+	rspi[0] = SPI.transfer(0x00);     // Read first incoming byte
+	rspi[1] = SPI.transfer(0x00);     // Read second incoming byte
+	rspi[2] = SPI.transfer(0x00);     // Read third incoming byte
+	rspi[3] = SPI.transfer(0x00);     // Read last incoming byte
 	digitalWrite(CSB_Pin, HIGH);          // Set CS to high Level (Inactive)
 
-	RSYST = 0;          // Concatenation of the 4 byte into one 32 bits data
-	RSYST += RSYST0 << 24;
-	RSYST += RSYST1 << 16;
-	RSYST += RSYST2 << 8;
-	RSYST += RSYST3;
+	uint32_t RSYST = (unsigned long)rspi[0] << 24 
+                	| (unsigned long)rspi[1] << 16
+                    | (unsigned long)rspi[2] << 8
+                    | (unsigned long)rspi[3];
+
 	return (RSYST);          // Return the data
 }
 
@@ -276,21 +276,22 @@ uint32_t EVBClass::ReadMTP(uint32_t Address) {
 	SPI.transfer(0x08);                 // Send 0x8 (Read a certain address from OTP command)
 	digitalWrite(CSB_Pin, HIGH);		// Set CS to high Level (Inactive)
 
-	delay(4);                          		// 4  ms of delay
+	delay(4);                          	// 4  ms of delay
 
-	digitalWrite(CSB_Pin, LOW);         	// Set CS to Low Level (Active)
-	SPI.transfer(0x58);                 	// Send 0x5 (read command) and 0x8 (SPI register address) -> 0x58
-	uint8_t RMTP0 = SPI.transfer(0x00); 	// Read first incoming byte
-	uint8_t RMTP1 = SPI.transfer(0x00);     // Read second incoming byte
-	uint8_t RMTP2 = SPI.transfer(0x00);     // Read third incoming byte
-	uint8_t RMTP3 = SPI.transfer(0x00);     // Read last incoming byte
-	digitalWrite(CSB_Pin, HIGH);            // Set CS to high Level (Inactive)
+	uint8_t rspi[4] = {};
 
-	RMTP = 0;                        	// Regoup the four RMTP byte into one 32 bits long data
-	RMTP += RMTP0 << 24;
-	RMTP += RMTP1 << 16;
-	RMTP += RMTP2 << 8;
-	RMTP += RMTP3;
+	digitalWrite(CSB_Pin, LOW);        	// Set CS to Low Level (Active)
+	SPI.transfer(0x58);                 // Send 0x5 (read command) and 0x8 (SPI register address) -> 0x58
+	rspi[0] = SPI.transfer(0x00);     	// Read first incoming byte
+	rspi[1] = SPI.transfer(0x00);     	// Read second incoming byte
+	rspi[2] = SPI.transfer(0x00);     	// Read third incoming byte
+	rspi[3] = SPI.transfer(0x00);     	// Read last incoming byte
+	digitalWrite(CSB_Pin, HIGH);        // Set CS to high Level (Inactive)
+
+	uint32_t RMTP = (unsigned long)rspi[0] << 24 
+                	| (unsigned long)rspi[1] << 16
+                    | (unsigned long)rspi[2] << 8
+                    | (unsigned long)rspi[3];
 
   return (RMTP);                        // Return the Read Data from OTP
 }

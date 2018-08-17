@@ -30,7 +30,7 @@
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
    @date 11 July 2018
    @brief File containing header code for EvalutationTool library.
-   @see https://github.com/TronicsMicrosystems/Firmware-2.2
+   @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
 
 #include <Arduino.h>
@@ -39,7 +39,7 @@
 #define EVB_h
 
 #ifndef ARDUINO_ARCH_SAMD              // Be sure that you choose Arduino M0, M0 Pro or Zero board in Tools => Board
-	#error "You must choose Arduino M0, M0 Pro and Zero in Tools menu => Board"
+	//#error "You must choose Arduino M0, M0 Pro and Zero in Tools menu => Board"
 #endif
 
 #define TronicsFirmwareVersion 22
@@ -59,7 +59,8 @@ extern uint16_t  TransfertTime;
 class EVBClass {
 public:	
 	static void Init(Serial_ ArduinoOutput);
-  static void Init(Uart ArduinoOutput);
+  //static void Init(Uart ArduinoOutput);
+  
   static void Startup_Initialization(void);
 	
 	static void ReadOutput(uint8_t Buffer_Sensor[], uint8_t Buffer_Size);
