@@ -1,13 +1,13 @@
 /****************************************************************************
 
-                FIRMWARE 2.1 for ARDUINO M0          //////////  //
+                FIRMWARE 2.2 for ARDUINO M0          //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
-                 for Evaluation Tool 2.1             //  //////////
+                 for Evaluation Tool 2.2             //  //////////
 
-     Copyright (C) 2017 by Tronics Microsystems
+     Copyright (C) 2018 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -26,15 +26,15 @@
 ****************************************************************************/
 
 /**
-   @file EvaluationTool_2_1.ino
+   @file EvaluationTool.ino
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 19 Sept 2017
-   @version : 2.1
-   @brief File containing firmware to program Arduino M0 Board for Evaluation Tool 2.1 software developped by Tronics Microsystems.
-   @see https://github.com/TronicsMicrosystems/Firmware-2.1
+   @date 23 August 2018
+   @version : 2.2
+   @brief File containing firmware to program Arduino M0 Board for Evaluation Tool software developped by Tronics Microsystems.
+   @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
 
-#define ArduinoOutput SerialUSB   // <== Define Ouput Port name (USB Port = SerialUSB ; RS422 Port = Serial1)
+#define ARDUINO_OUTPUT SerialUSB   // <== Define Ouput Port name (USB Port = SerialUSB ; RS422 Port = Serial1)
 
 /////////////////////////////////////////////////////////////
 //                                                         //
@@ -45,7 +45,7 @@
 #include <EVB.h>  // Required for EVB use in library
 
 void setup() {
-  EVB.Init(ArduinoOutput);  // Initialisation of GYPRO-EVB 2.0, 2.1 or 3.0 (GPIO Pins + SPI + Data Outputs)
+  EVB.Init(ARDUINO_OUTPUT);  // Initialisation of EVB 2.0, 2.1 or 3.0 (GPIO Pins + SPI + Data Outputs)
 }
 
 /////////////////////////////////////////////////////////////

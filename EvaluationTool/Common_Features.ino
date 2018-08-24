@@ -1,13 +1,13 @@
 /****************************************************************************
 
-                FIRMWARE 2.1 for ARDUINO M0          //////////  //
+                FIRMWARE 2.2 for ARDUINO M0          //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
-                 for Evaluation Tool 2.1             //  //////////
+                 for Evaluation Tool 2.2             //  //////////
 
-     Copyright (C) 2017 by Tronics Microsystems
+     Copyright (C) 2018 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -28,10 +28,10 @@
 /**
    @file Common_Features.ino
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 19 Sept 2017
-   @version : 2.1
-   @brief File containing common features for EvalutationTool_2_1 file.
-   @see https://github.com/TronicsMicrosystems/Firmware-2.1
+   @date 23 August 2018
+   @version : 2.2
+   @brief File containing common features for EvalutationTool file.
+   @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
 
 /////////////////////////////////////////////////////////////
@@ -56,20 +56,20 @@
 /////////////////////////////////////////////////////////////
 
 void sensorOutputRead(unsigned int DataRate, unsigned int AcquisitionTime) {   // Two arguments : Data Rate in hertz (Typically 1800 Hz) + Time Acquisition in seconds
-  float DataRatePeriod = 1000000 / DataRate;              // Define Data Rate period in microseconds (µs)
-  unsigned long NbSamples = DataRate * AcquisitionTime;
-  byte sensorOutputBuffer[6];                             // Define bytes Buffer of the Sensor (will contains the first 6 bytes of the SPI register)
+  unsigned int DataRatePeriod = 1000000 / DataRate;              // Define Data Rate period in microseconds (µs)
+  unsigned long NbSamples = (unsigned long)DataRate * (unsigned long)AcquisitionTime;
+  byte sensorOutputBuffer[6] = {};                             // Define bytes Buffer of the Sensor (will contains the first 6 bytes of the SPI register)
   String Stop_Acquisition = "";                           // Variable to check if a stop of the acquisition is asked
 
   for (unsigned long i = 0; i < NbSamples; i++) {         // TimeAcquisition Loop (One loop = One Second)
-    delayMicroseconds(DataRatePeriod - TransfertTime);    // Wait/Synchronize the correct period between each measure (one measure = 76 or 77 µs). Need to anticipate this transfert to have correct sampling.
+    delayMicroseconds(DataRatePeriod - Transfert_Time);    // Wait/Synchronize the correct period between each measure (one measure = 76 or 77 µs). Need to anticipate this transfert to have correct sampling.
 
     EVB.ReadOutput(sensorOutputBuffer, 6);                // Read the 6 bytes of the Sensor Output (Angular Rate + Temperature + Selft Test)
-    ArduinoOutput.write(sensorOutputBuffer, 6);           // Send to computer the buffer with the 6 bytes
-
-    if (ArduinoOutput.available()) {                      // Check if an acquisition stop is asked
-      Stop_Acquisition = ArduinoOutput.read();
-      break;
+    ARDUINO_OUTPUT.write(sensorOutputBuffer, 6);           // Send to computer the buffer with the 6 bytes
+    
+    if (ARDUINO_OUTPUT.available()) {                      // Check if an acquisition stop is asked
+      Stop_Acquisition = ARDUINO_OUTPUT.read();
+      break;      
     }
   }
 }
@@ -92,7 +92,7 @@ void sensorStartupTime() {
   delay(10);
 
   for (unsigned long i = 0; i < NbSamples; i++) {       // AcquisitionTime Loop (One loop = One Measure)
-    delayMicroseconds(DataRatePeriod - TransfertTime);  // Wait/Synchronize the correct period between each measure (one measure = 77 µs). Need to anticipate this transfert to have correct sampling.
+    delayMicroseconds(DataRatePeriod - Transfert_Time);  // Wait/Synchronize the correct period between each measure (one measure = 77 µs). Need to anticipate this transfert to have correct sampling.
 
     if (i == DataRatePeriod) {
       digitalWrite(EN_Pin, HIGH);
@@ -100,7 +100,7 @@ void sensorStartupTime() {
     }
 
     EVB.ReadOutput(sensorOutputBuffer, 6);           // Read the 6 bytes Sensor Output
-    ArduinoOutput.write(sensorOutputBuffer, 6);   // Send to computer the buffer with the 6 bytes
+    ARDUINO_OUTPUT.write(sensorOutputBuffer, 6);   // Send to computer the buffer with the 6 bytes
 
   }
 }
@@ -118,8 +118,8 @@ unsigned long serialRead() {
   long NumberReceived = 0; // Declare NumberReceived variable
 
   while (NumberReceived == 0) {
-    while (ArduinoOutput.available() > 0) { // While loop available byte on the InBuffer of Arduino
-      ByteReceived = ArduinoOutput.read();  // Read byte received
+    while (ARDUINO_OUTPUT.available() > 0) { // While loop available byte on the InBuffer of Arduino
+      ByteReceived = ARDUINO_OUTPUT.read();  // Read byte received
 
       if ((ByteReceived == '-') && (Compt == 0))Signe = false;  // Case if byte is a signe for a negative number
       Compt += 1;  // Increment compteur of byte
@@ -150,7 +150,7 @@ void sensorReadSPI() {
   byte sensorOutputBuffer[8];           // Define bytes Buffer of the Sensor or Axo (will contains the first 6 bytes of the SPI register)
 
   EVB.ReadOutput(sensorOutputBuffer, 8);           // Read the 6 bytes Sensor Output
-  ArduinoOutput.write(sensorOutputBuffer, 8);   // Send to computer the buffer with the 6 bytes
+  ARDUINO_OUTPUT.write(sensorOutputBuffer, 8);   // Send to computer the buffer with the 6 bytes
 }
 
 /////////////////////////////////////////////////////////////
@@ -160,6 +160,6 @@ void sensorReadSPI() {
 /////////////////////////////////////////////////////////////
 
 void tronicsFirmwareVersion() {
-  ArduinoOutput.println(TronicsFirmwareVersion);
+  ARDUINO_OUTPUT.println(TronicsFirmwareVersion);
 }
 

@@ -1,13 +1,13 @@
 /****************************************************************************
 
-                FIRMWARE 2.1 for ARDUINO M0          //////////  //
+                FIRMWARE 2.2 for ARDUINO M0          //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
-                 for Evaluation Tool 2.1             //  //////////
+                 for Evaluation Tool 2.2             //  //////////
 
-     Copyright (C) 2017 by Tronics Microsystems
+     Copyright (C) 2018 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -28,10 +28,10 @@
 /**
    @file G3300S_A215_Features.ino
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 19 Sept 2017
-   @version : 2.1
-   @brief File containing GYPRO® 3300S and AXO® 215 features for EvalutationTool_2_1 file.
-   @see https://github.com/TronicsMicrosystems/Firmware-2.1
+   @date 23 August 2018
+   @version : 2.2
+   @brief File containing GYPRO® 3300S and AXO® 215 features for EvalutationTool file.
+   @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
 
 /////////////////////////////////////////////////////////////
@@ -50,7 +50,6 @@
 //            7 : sensorReadTempCalibration                //
 //                                                         //
 //  II - Others Features                                   //
-//            8 : sensorReadFCLK                           //
 //            9 : sensorHardwareSelfTest                   //
 //           10 : sensorStartupTime                        //
 //                                                         //
@@ -73,6 +72,7 @@
 //           22 : sensorReadMTP                            //
 //           23 : sensorReadSPI                            //
 //           24 : tronicsFirmwareVersion                   //
+//           25 : sensorWriteSystemRegister
 //                                                         //
 /////////////////////////////////////////////////////////////
 
@@ -124,7 +124,7 @@ void mainLoop2() {
 
     /* TOUT SEL : Select Raw / Calibrated temperature output (1 = Raw ; 2 = Calibrated) */
     case 5 : {
-        unsigned int _ToutSel = serialRead();  // Declare _ToutSel value
+        unsigned int _ToutSel = (unsigned int)serialRead();  // Declare _ToutSel value
 
         if (_ToutSel == 1) {    // Case 1 = Raw
           sensorToutSel0_2();   // Set temperature output sel at 0 (Raw Output)
@@ -137,8 +137,8 @@ void mainLoop2() {
 
     /*  TEMPERATURE CALIBRATION : Write temperature sensor calibration coefficients in the system register */
     case 6 : {
-        unsigned int _Gain = serialRead();          // Declare Gain received
-        unsigned int _Offset = serialRead();        // Declare Offset received
+        unsigned int _Gain = (unsigned int)serialRead();          // Declare Gain received
+        unsigned int _Offset = (unsigned int)serialRead();        // Declare Offset received
         sensorWriteTempCalibration_2(_Gain, _Offset);  // Write Gain and Offset into the System Register
         break;                                      // End of this case
       }
@@ -148,18 +148,10 @@ void mainLoop2() {
       sensorReadTempCalibration_2();  // Read and display temperature sensor calibration coefficients
       break;
 
-    /* READ DRIVE FREQUENCY (FOR GYPRO3300S and 3300M Only) */
-    case 8 : {
-        float Fdrive = EVB.ReadFCLK(1000);  // Read Frequency
-        Fdrive = (Fdrive * 4) / 40;         // Divide by 40 and multiply by 4 due to oversampling
-        ArduinoOutput.println(Fdrive);      // Display Drive Frequency
-        break;
-      }
-
     /* ANALOG SELF TEST : Test GYPRO ST Pin */
     case 9 : {
         unsigned int hardwareST = digitalRead(ST_Pin);  // Test Self Test analog with Arduino ADC on the ST pin
-        ArduinoOutput.println(hardwareST);              // Display ST Analog test result (0 = Failed, 1 = Passed)
+        ARDUINO_OUTPUT.println(hardwareST);              // Display ST Analog test result (0 = Failed, 1 = Passed)
         break;
       }
 
@@ -171,7 +163,7 @@ void mainLoop2() {
     /* CHECKING MTP SLOTS STATUS */
     case 11 : {
         unsigned int MTP_Slot_Value = sensorMTPSlotNumber_2(); // Check MTP Slot value
-        ArduinoOutput.println(MTP_Slot_Value);                // Display MTP Slot value
+        ARDUINO_OUTPUT.println(MTP_Slot_Value);                // Display MTP Slot value
         break;
       }
 
@@ -305,20 +297,20 @@ void mainLoop2() {
     /* GYPRO UID : Return GYPRO UID */
     case 15 : {
         String SensorUID = sensorUID_2(); // Check UID of the Sensor
-        ArduinoOutput.println(SensorUID); // Send it to USB serial
+        ARDUINO_OUTPUT.println(SensorUID); // Send it to USB serial
         break;
       }
 
     /* CHECKING PRODUCT NAME */
     case 16: {
         String ProductName = sensorProductName_2();  // Declare and read Sensor type (GYPRO_TYPE function)
-        ArduinoOutput.println(ProductName);
+        ARDUINO_OUTPUT.println(ProductName);
         break;
       }
 
     /* CHECK EVB VERSION */
     case 17:
-      ArduinoOutput.println(EVB_Version);
+      ARDUINO_OUTPUT.println(EVB_Version);
       break;
 
     /* READ ALL SYSTEM REGISTER */
@@ -327,7 +319,7 @@ void mainLoop2() {
 
         for (int i = 0; i <= 82; i++) {                       // For loop to complete the array with one register by line
           SensorAllSystemRegister[i] = EVB.ReadSR(i);         // Copy content of the system register (address i) in the i line of SYSTEM_REGISTER array
-          ArduinoOutput.println(SensorAllSystemRegister[i]);  // Display i system register value
+          ARDUINO_OUTPUT.println(SensorAllSystemRegister[i]);  // Display i system register value
         }
         break;
       }
@@ -353,7 +345,7 @@ void mainLoop2() {
     case 20: {
         unsigned long _SystemRegisterAddress = serialRead();
         unsigned long SystemRegisterData = EVB.ReadSR(_SystemRegisterAddress);
-        ArduinoOutput.println(SystemRegisterData);
+        ARDUINO_OUTPUT.println(SystemRegisterData);
         break;
       }
 
@@ -369,7 +361,7 @@ void mainLoop2() {
     case 22: {
         unsigned long _MTPAddress = serialRead();
         unsigned long MTPData = EVB.ReadMTP(_MTPAddress);
-        ArduinoOutput.println(MTPData);
+        ARDUINO_OUTPUT.println(MTPData);
         break;
       }
 
@@ -555,12 +547,12 @@ void sensorToutSel1_2() {                        // Set TOUT SEL at 1 (Calibrate
 void sensorWriteTempCalibration_2(unsigned int Temp_Gain, unsigned int Temp_Offset) {
   Temp_Gain = Temp_Gain << 4;                   // 4 Bitshift
   unsigned long Temp_Gain_plus_Offset = 0;      // Create long 32-bits data 0000 0000 0000 00GG GGGG GGGG GGGG XXXX (O = Offset ; G = Gain)
-  Temp_Gain_plus_Offset += Temp_Offset << 18;   // Write Offset at correct place
-  Temp_Gain_plus_Offset += Temp_Gain;           // Write Gain at correct place
+  Temp_Gain_plus_Offset += (unsigned long)Temp_Offset << 18;   // Write Offset at correct place
+  Temp_Gain_plus_Offset += (unsigned long)Temp_Gain;           // Write Gain at correct place
 
   unsigned long SR_Gain_Offset = EVB.ReadSR(0x04);  // Read System register at address
   SR_Gain_Offset &= 0x0000000F;                     // 0000 OOOO OOOO OOO0 0000 0000 0000 1111 = 0x0000000F (Offset and Gain bits place at 0)
-  SR_Gain_Offset |= Temp_Gain_plus_Offset;          // Bitmaks to change only bits where Gain and Offset should be written
+  SR_Gain_Offset |= (unsigned long)Temp_Gain_plus_Offset;          // Bitmaks to change only bits where Gain and Offset should be written
   EVB.WriteSR(SR_Gain_Offset, 0x04);                // Write the modified register
 }
 
@@ -577,12 +569,12 @@ void sensorReadTempCalibration_2(void) {
   unsigned long Read_Gain = SR_Gain_Offset;
   Read_Gain &= 0x0003FFF0;            // Bitmask and bitshift to determine Gain value
   Read_Gain = Read_Gain >> 4;
-  ArduinoOutput.println(Read_Gain);   // Write the Gain on the USB
+  ARDUINO_OUTPUT.println(Read_Gain);   // Write the Gain on the USB
 
   unsigned long Read_Offset = SR_Gain_Offset;
   Read_Offset &= 0xFFFC0000;          // Bitmask and bitshift to determine Offset value
   Read_Offset = Read_Offset >> 18;
-  ArduinoOutput.println(Read_Offset); // Write the Offset on the USB
+  ARDUINO_OUTPUT.println(Read_Offset); // Write the Offset on the USB
 }
 
 /////////////////////////////////////////////////////////////
@@ -670,17 +662,17 @@ void sensorReadTempCompensation_2(void) {
   READ_Coeff_B4 &= 0x0007FFFF;    // Bitmask to extract only B4 coefficient
   READ_Coeff_SF4 &= 0x0007FFFF;   // Bitmask to extract only SF4 coefficient
 
-  ArduinoOutput.println(READ_Coeff_B0);   // Write on the USB B0 value
-  ArduinoOutput.println(READ_Coeff_SF0);  // Write on the USB SF0 value
-  ArduinoOutput.println(READ_Coeff_TMID); // Write on the USB TMID value
-  ArduinoOutput.println(READ_Coeff_B1);   // Write on the USB B1 value
-  ArduinoOutput.println(READ_Coeff_SF1);  // Write on the USB SF1 value
-  ArduinoOutput.println(READ_Coeff_B2);   // Write on the USB B2 value
-  ArduinoOutput.println(READ_Coeff_SF2);  // Write on the USB SF2 value
-  ArduinoOutput.println(READ_Coeff_B3);   // Write on the USB B3 value
-  ArduinoOutput.println(READ_Coeff_SF3);  // Write on the USB SF3 value
-  ArduinoOutput.println(READ_Coeff_B4);   // Write on the USB B4 value
-  ArduinoOutput.println(READ_Coeff_SF4);  // Write on the USB SF4 value
+  ARDUINO_OUTPUT.println(READ_Coeff_B0);   // Write on the USB B0 value
+  ARDUINO_OUTPUT.println(READ_Coeff_SF0);  // Write on the USB SF0 value
+  ARDUINO_OUTPUT.println(READ_Coeff_TMID); // Write on the USB TMID value
+  ARDUINO_OUTPUT.println(READ_Coeff_B1);   // Write on the USB B1 value
+  ARDUINO_OUTPUT.println(READ_Coeff_SF1);  // Write on the USB SF1 value
+  ARDUINO_OUTPUT.println(READ_Coeff_B2);   // Write on the USB B2 value
+  ARDUINO_OUTPUT.println(READ_Coeff_SF2);  // Write on the USB SF2 value
+  ARDUINO_OUTPUT.println(READ_Coeff_B3);   // Write on the USB B3 value
+  ARDUINO_OUTPUT.println(READ_Coeff_SF3);  // Write on the USB SF3 value
+  ARDUINO_OUTPUT.println(READ_Coeff_B4);   // Write on the USB B4 value
+  ARDUINO_OUTPUT.println(READ_Coeff_SF4);  // Write on the USB SF4 value
 }
 
 /////////////////////////////////////////////////////////////
