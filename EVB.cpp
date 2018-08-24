@@ -28,7 +28,7 @@
 /**
    @file EVB.cpp
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 11 July 2018
+   @date 23 August 2018
    @brief File containing source code for EvalutationTool library.
    @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
@@ -47,7 +47,7 @@ uint16_t VDDIO_Pin = 0;
 uint16_t CSB_Pin = 0;
 uint16_t DRDY_Pin = 0;
 
-uint16_t TransfertTime = 77;
+uint16_t Transfert_Time = 77;
 
 /////////////////////////////////////////////////////////////
 //                                                         //
@@ -57,15 +57,16 @@ uint16_t TransfertTime = 77;
 
 void EVBClass::Init(Serial_ ArduinoOutput)	{	
 	Startup_Initialization();
-	TransfertTime = 76; //76 M0
+	Transfert_Time = 76;
 	ArduinoOutput.begin(115200);          // Initialisation of USB communication
 	while(!ArduinoOutput);
 }
 
-/*void EVBClass::Init(Uart ArduinoOutput)	{
+/*void EVBClass::Init(Uart ArduinoOutput)	{ // Uncomment to use RS422 port with Arduino M0
 	Startup_Initialization();
-	TransfertTime = 77;
+	Transfert_Time = 77;
 	ArduinoOutput.begin(921600);          // Initialisation of Serial communication
+	while(!ArduinoOutput);
 }*/
 
 void EVBClass::Startup_Initialization(void) {
@@ -84,7 +85,7 @@ void EVBClass::Startup_Initialization(void) {
 	delay(100);
  	if ((TestEVB1 != 0) && (TestEVB1 != 0xFFFFFFFF))
 	{
-	 	EVB_Version = 20;
+	 	EVB_Version = 20; // EVB 2.0
 	}
 	else
 	{
@@ -102,7 +103,7 @@ void EVBClass::Startup_Initialization(void) {
 
 		if ((TestEVB2 != 0) && (TestEVB2 != 0xFFFFFFFF))
 		{
-			EVB_Version = 21; //21;
+			EVB_Version = 21; // EVB 2.1
 		}
 		else
 		{
@@ -113,7 +114,7 @@ void EVBClass::Startup_Initialization(void) {
 			uint32_t TestEVB3 = ReadSR(0);
 			if ((TestEVB3 != 0) && (TestEVB3 != 0xFFFFFFFF))
 			{
-				EVB_Version = 30; //21;
+				EVB_Version = 30; // EVB 3.0
 			}
 			else
 			{
@@ -166,12 +167,16 @@ void EVBClass::Startup_Initialization(void) {
 	pinMode(CSB_Pin, OUTPUT);             // Set CSB (SPI Chip select) Pin as Output
 	pinMode(LED_Pin, OUTPUT);             // Set LED Pin as Output
 
-	digitalWrite(EN_Pin, HIGH);           // Set EN (Enable) pin to High Level (Active Low)
+	digitalWrite(EN_Pin, LOW);           // Set EN (Enable) pin to Low Level (Active Low) (To Reset the sensor)
 	digitalWrite(CSB_Pin, HIGH);          // Set CSB (SPI Chip select) pin to High Level (Active Low)
     digitalWrite(VDDIO_Pin, LOW);         // Set VDDIO pin to High Level (Active Low)
 
+	delay(5000);
+
+	digitalWrite(EN_Pin, HIGH);           // Set EN (Enable) pin to High Level (Active Low)
+
 	delay(1000);
-		
+
 	uint32_t TestASIC1 = ReadSR(0x00);
     uint32_t TestASIC2 = ReadSR(0x40);
 
@@ -182,7 +187,7 @@ void EVBClass::Startup_Initialization(void) {
     else {
       ASIC_Version = 2;
       digitalWrite(VDDIO_Pin, HIGH);      // Set VDDIO pin to High Level (Active High)
-    }
+	}		
 }
 
 /////////////////////////////////////////////////////////////
@@ -247,17 +252,19 @@ uint32_t EVBClass::ReadSR(uint32_t Address) {
 /////////////////////////////////////////////////////////////
 
 void EVBClass::WriteSR(uint32_t Data, uint32_t Address) {
-	uint8_t WSYST0 = (Data & 0xff000000) >> 24;  // Detachment of the data into 4 bytes
-	uint8_t WSYST1 = (Data & 0x00ff0000) >> 16;
-	uint8_t WSYST2 = (Data & 0x0000ff00) >>  8;
-	uint8_t WSYST3 = (Data & 0x000000ff)      ;
+	uint8_t wspi[4] = {};
+
+	wspi[0] = (Data & 0xff000000) >> 24;  // Detachment of the data into 4 bytes
+	wspi[1] = (Data & 0x00ff0000) >> 16;
+	wspi[2] = (Data & 0x0000ff00) >>  8;
+	wspi[3] = (Data & 0x000000ff)      ;
 
 	digitalWrite(CSB_Pin, LOW);   	// Set CS to Low Level (Active)
 	SPI.transfer(0x78);           	// Send 0x7 (write command) and 0x8 (SPI register address) -> 0x78
-	SPI.transfer(WSYST0);         	// Send first byte of the data
-	SPI.transfer(WSYST1);         	// Send second byte of the data
-	SPI.transfer(WSYST2);         	// Send third byte of the data
-	SPI.transfer(WSYST3);         	// Send last byte of the data
+	SPI.transfer(wspi[0]);         	// Send first byte of the data
+	SPI.transfer(wspi[1]);         	// Send second byte of the data
+	SPI.transfer(wspi[2]);         	// Send third byte of the data
+	SPI.transfer(wspi[3]);         	// Send last byte of the data
 	SPI.transfer(Address);  		// Send The system register adress
 	SPI.transfer(0x02);           	// Send System register command (0x02 : write to system register)
 	digitalWrite(CSB_Pin, HIGH);  	// Set CS to high Level (Inactive)
@@ -291,7 +298,7 @@ uint32_t EVBClass::ReadMTP(uint32_t Address) {
 	uint32_t RMTP = (unsigned long)rspi[0] << 24 
                 	| (unsigned long)rspi[1] << 16
                     | (unsigned long)rspi[2] << 8
-                    | (unsigned long)rspi[3];
+					| (unsigned long)rspi[3];					
 
   return (RMTP);                        // Return the Read Data from OTP
 }

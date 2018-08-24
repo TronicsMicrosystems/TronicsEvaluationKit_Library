@@ -1,13 +1,13 @@
 /****************************************************************************
 
-    		    Tronics EVB Library for ARDUINO M0       //////////  //
+                FIRMWARE 2.2 for ARDUINO M0          //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
                  for Evaluation Tool 2.2             //  //////////
 
-     Copyright (C) 2017 by Tronics Microsystems
+     Copyright (C) 2018 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -26,49 +26,41 @@
 ****************************************************************************/
 
 /**
-   @file EVB.h
+   @file EvaluationTool.ino
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
    @date 23 August 2018
-   @brief File containing header code for EvalutationTool library.
+   @version : 2.2
+   @brief File containing firmware to program Arduino M0 Board for Evaluation Tool software developped by Tronics Microsystems.
    @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
 
-#include <Arduino.h>
+#define ARDUINO_OUTPUT SerialUSB   // <== Define Ouput Port name (USB Port = SerialUSB ; RS422 Port = Serial1)
 
-#ifndef EVB_h
-#define EVB_h
+/////////////////////////////////////////////////////////////
+//                                                         //
+//                 GLOBAL INITIALISATIONS                  //
+//                                                         //
+/////////////////////////////////////////////////////////////
 
-#define TronicsFirmwareVersion 22
+#include <EVB.h>  // Required for EVB use in library
 
-extern uint16_t  ASIC_Version;
-extern uint16_t  EVB_Version;
+void setup() {
+  EVB.Init(ARDUINO_OUTPUT);  // Initialisation of EVB 2.0, 2.1 or 3.0 (GPIO Pins + SPI + Data Outputs)
+}
 
-extern uint16_t  LED_Pin;
-extern uint16_t  ST_Pin;
-extern uint16_t  EN_Pin;
-extern uint16_t  FLCK_Pin;
-extern uint16_t  VDDIO_Pin;
-extern uint16_t  CSB_Pin;
-extern uint16_t  DRDY_Pin;
-extern uint16_t  Transfert_Time;
+/////////////////////////////////////////////////////////////
+//                                                         //
+//                        MAIN PROGRAM                     //
+//                                                         //
+/////////////////////////////////////////////////////////////
 
-class EVBClass {
-public:	
-	static void Init(Serial_ ArduinoOutput);
-  //static void Init(Uart ArduinoOutput); // Uncomment to use RS422 port with Arduino M0
-  
-  static void Startup_Initialization(void);
-	
-	static void ReadOutput(uint8_t Buffer_Sensor[], uint8_t Buffer_Size);
-	
-	static uint32_t ReadSR(uint32_t Address);
-	static void WriteSR(uint32_t Data, uint32_t Address);
-	
-	static uint32_t ReadMTP(uint32_t Address);	
-	static void ProgMTP(uint32_t Address);
-  static void CopyMTP(uint32_t Address);	
-};
+void loop() {
+  if (ASIC_Version == 1) { // Case ASIC V1 ==> GYPRO® 2300, 2300LD or 3300
+    mainLoop1();
+  }
 
-extern EVBClass EVB;
+  else {  // Case ASIC V2 ==> GYPRO® 3300S or AXO® 215.
+    mainLoop2();
+  }
+}
 
-#endif
