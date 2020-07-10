@@ -1,13 +1,13 @@
 /****************************************************************************
 
-                FIRMWARE 2.2 for ARDUINO M0          //////////  //
+                FIRMWARE 2.3 for ARDUINO M0          //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
-                 for Evaluation Tool 2.2             //  //////////
+                 for Evaluation Tool 2.3             //  //////////
 
-     Copyright (C) 2018 by Tronics Microsystems
+     Copyright (C) 2020 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -28,8 +28,8 @@
 /**
    @file Common_Features.ino
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 23 August 2018
-   @version : 2.2
+   @date 02 July 2020
+   @version : 2.3
    @brief File containing common features for EvalutationTool file.
    @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
@@ -55,23 +55,20 @@
 //                                                         //
 /////////////////////////////////////////////////////////////
 
-void sensorOutputRead(unsigned int DataRate, unsigned int AcquisitionTime) {   // Two arguments : Data Rate in hertz (Typically 1800 Hz) + Time Acquisition in seconds
-  unsigned int DataRatePeriod = 1000000 / DataRate;              // Define Data Rate period in microseconds (µs)
-  unsigned long NbSamples = (unsigned long)DataRate * (unsigned long)AcquisitionTime;
-  byte sensorOutputBuffer[6] = {};                             // Define bytes Buffer of the Sensor (will contains the first 6 bytes of the SPI register)
-  String Stop_Acquisition = "";                           // Variable to check if a stop of the acquisition is asked
-
-  for (unsigned long i = 0; i < NbSamples; i++) {         // TimeAcquisition Loop (One loop = One Second)
-    delayMicroseconds(DataRatePeriod - Transfert_Time);    // Wait/Synchronize the correct period between each measure (one measure = 76 or 77 µs). Need to anticipate this transfert to have correct sampling.
-
+void sensorOutputRead() {   // Two arguments : Data Rate in hertz (Typically 1800 Hz) + Time Acquisition in seconds
+  while(true){
+    byte sensorOutputBuffer[6] = {};                             // Define bytes Buffer of the Sensor (will contains the first 6 bytes of the SPI register)
     EVB.ReadOutput(sensorOutputBuffer, 6);                // Read the 6 bytes of the Sensor Output (Angular Rate + Temperature + Selft Test)
-    ARDUINO_OUTPUT.write(sensorOutputBuffer, 6);           // Send to computer the buffer with the 6 bytes
-    
+    bool dataReady = ((sensorOutputBuffer[0] & 0b10000000) == 128);
+    if (dataReady) {
+      ARDUINO_OUTPUT.write(sensorOutputBuffer, 6);           // Send to computer the buffer with the 6 bytes
+    }
+
     if (ARDUINO_OUTPUT.available()) {                      // Check if an acquisition stop is asked
-      Stop_Acquisition = ARDUINO_OUTPUT.read();
+      int Stop_Acquisition = ARDUINO_OUTPUT.read();
       break;      
     }
-  }
+  }  
 }
 
 /////////////////////////////////////////////////////////////

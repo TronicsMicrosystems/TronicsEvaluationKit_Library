@@ -1,13 +1,13 @@
 /****************************************************************************
 
-    		    Tronics EVB Library for ARDUINO M0       //////////  //
+                FIRMWARE 2.3 for ARDUINO M0          //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
-                 for Evaluation Tool 2.2             //  //////////
+                 for Evaluation Tool 2.3             //  //////////
 
-     Copyright (C) 2017 by Tronics Microsystems
+     Copyright (C) 2020 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -28,7 +28,8 @@
 /**
    @file EVB.h
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 23 August 2018
+   @date 02 July 2020
+   @version : 2.3
    @brief File containing header code for EvalutationTool library.
    @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
@@ -38,10 +39,9 @@
 #ifndef EVB_h
 #define EVB_h
 
-#define TronicsFirmwareVersion 22
+#define TronicsFirmwareVersion 23
 
 extern uint16_t  ASIC_Version;
-extern uint16_t  EVB_Version;
 
 extern uint16_t  LED_Pin;
 extern uint16_t  ST_Pin;
@@ -54,10 +54,10 @@ extern uint16_t  Transfert_Time;
 
 class EVBClass {
 public:	
-	static void Init(Serial_ ArduinoOutput);
+	static void Init(Serial_ ArduinoOutput, uint16_t EvbVersion);
   //static void Init(Uart ArduinoOutput); // Uncomment to use RS422 port with Arduino M0
   
-  static void Startup_Initialization(void);
+  static void Startup_Initialization(uint16_t EVB_Version);
 	
 	static void ReadOutput(uint8_t Buffer_Sensor[], uint8_t Buffer_Size);
 	

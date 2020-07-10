@@ -1,13 +1,13 @@
 /****************************************************************************
 
-    		Tronics EVB Library for ARDUINO M0       //////////  //
+                FIRMWARE 2.3 for ARDUINO M0          //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
-                 for Evaluation Tool 2.2             //  //////////
+                 for Evaluation Tool 2.3             //  //////////
 
-     Copyright (C) 2017 by Tronics Microsystems
+     Copyright (C) 2020 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -28,7 +28,8 @@
 /**
    @file EVB.cpp
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 23 August 2018
+   @date 02 July 2020
+   @version : 2.3
    @brief File containing source code for EvalutationTool library.
    @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
@@ -37,7 +38,6 @@
 #include "SPI.h"
 
 uint16_t ASIC_Version = 0;
-uint16_t EVB_Version = 0;
 
 uint16_t LED_Pin = 13;
 uint16_t ST_Pin = 0;
@@ -55,9 +55,9 @@ uint16_t Transfert_Time = 77;
 //                                                         //
 /////////////////////////////////////////////////////////////
 
-void EVBClass::Init(Serial_ ArduinoOutput)	{	
-	Startup_Initialization();
-	Transfert_Time = 76;
+void EVBClass::Init(Serial_ ArduinoOutput, uint16_t EvbVersion)	{	
+	Startup_Initialization(EvbVersion);
+	Transfert_Time = 100; //M0 = 76
 	ArduinoOutput.begin(115200);          // Initialisation of USB communication
 	while(!ArduinoOutput);
 }
@@ -69,59 +69,12 @@ void EVBClass::Init(Serial_ ArduinoOutput)	{
 	while(!ArduinoOutput);
 }*/
 
-void EVBClass::Startup_Initialization(void) {
+void EVBClass::Startup_Initialization(uint16_t EVB_Version) {
 	// Hardware test to know if the board is an EVB 2.0, 2.1 or 3.0
 	SPI.begin();                          // Initialisation of SPI communication
 	SPI.setDataMode(SPI_MODE0);           // Set SPI communication MODE0 : CPOL=0 CPHA=0
 	SPI.setClockDivider(SPI_CLOCK_DIV16); // Set SPI Frequency at 1 MHz
-	SPI.setBitOrder(MSBFIRST);            // Set bit order : Most Significant Bit First 
-
-	CSB_Pin = 25;
-	pinMode(CSB_Pin, OUTPUT);
-	digitalWrite(CSB_Pin, HIGH);
-
-	uint32_t TestEVB1 = ReadSR(0);
-
-	delay(100);
- 	if ((TestEVB1 != 0) && (TestEVB1 != 0xFFFFFFFF))
-	{
-	 	EVB_Version = 20; // EVB 2.0
-	}
-	else
-	{
-		CSB_Pin = 8;
-		EN_Pin = 11;
-
-		pinMode(CSB_Pin, OUTPUT);
-		pinMode(EN_Pin, OUTPUT);
-
-		digitalWrite(CSB_Pin, HIGH);           // Set EN (Enable) pin to High Level (Active Low)
-		digitalWrite(EN_Pin, HIGH);          // Set CSB (SPI Chip select) pin to High Level (Active Low)
-
-		delay(500);
-		uint32_t TestEVB2 = ReadSR(0);
-
-		if ((TestEVB2 != 0) && (TestEVB2 != 0xFFFFFFFF))
-		{
-			EVB_Version = 21; // EVB 2.1
-		}
-		else
-		{
-			delay(500);
-			CSB_Pin = 11;
-			EN_Pin = 8;
-
-			uint32_t TestEVB3 = ReadSR(0);
-			if ((TestEVB3 != 0) && (TestEVB3 != 0xFFFFFFFF))
-			{
-				EVB_Version = 30; // EVB 3.0
-			}
-			else
-			{
-				EVB_Version = 100; //error
-			}
-		}
-	}
+	SPI.setBitOrder(MSBFIRST);            // Set bit order : Most Significant Bit First 	
 
 	if (EVB_Version == 20)
 	{
@@ -149,15 +102,6 @@ void EVBClass::Startup_Initialization(void) {
 		DRDY_Pin = 12;					// Define DRDY (Data Ready) Pin number (12)
 		VDDIO_Pin = 13;                 // Define VDDIO Pin number (9)
 	}
-	else if (EVB_Version == 100) 		//socket
-	{
-		EN_Pin = 8;                     // Define En (Enable) Pin number (8)
-		ST_Pin = 9;                     // Define ST (Self Test) Pin number (9)
-		FLCK_Pin = 10;                  // Define FLCK (Clock frequency) Pin number (10)
-		CSB_Pin = 25;                   // Define CSB (SPI Chip select) Pin number (11)
-		DRDY_Pin = 12;					// Define DRDY (Data Ready) Pin number (25)
-		VDDIO_Pin = 13;                 // Define VDDIO Pin number (9)
-	}
 
 	pinMode(ST_Pin, INPUT);               // Set ST (Self Test) Pin as Input
 	pinMode(FLCK_Pin, INPUT);             // Set FCLK (Clock Frequency) Pin as Input
@@ -171,7 +115,7 @@ void EVBClass::Startup_Initialization(void) {
 	digitalWrite(CSB_Pin, HIGH);          // Set CSB (SPI Chip select) pin to High Level (Active Low)
     digitalWrite(VDDIO_Pin, LOW);         // Set VDDIO pin to High Level (Active Low)
 
-	delay(5000);
+	delay(1000);
 
 	digitalWrite(EN_Pin, HIGH);           // Set EN (Enable) pin to High Level (Active Low)
 

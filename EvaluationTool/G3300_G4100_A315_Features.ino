@@ -1,13 +1,13 @@
 /****************************************************************************
 
-                FIRMWARE 2.2 for ARDUINO M0          //////////  //
+                FIRMWARE 2.3 for ARDUINO M0          //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
-                 for Evaluation Tool 2.2             //  //////////
+                 for Evaluation Tool 2.3             //  //////////
 
-     Copyright (C) 2018 by Tronics Microsystems
+     Copyright (C) 2020 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /**
-   @file G3300S_A215_Features.ino
+   @file G3300_G4100_A215_A315_Features.ino
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 23 August 2018
-   @version : 2.2
-   @brief File containing GYPRO® 3300S and AXO® 215 features for EvalutationTool file.
+   @date 02 July 2020
+   @version : 2.3
+   @brief File containing GYPRO® and AXO® features for EvalutationTool file.
    @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
 
@@ -80,9 +80,7 @@ void mainLoop2() {
   switch (serialRead()) {
     /* RDGO + RDTO + ST : Return Rate, Temperature and Self Test values */
     case 1 : {
-        unsigned int _DataRate = serialRead();  // Wait for an incoming Data Rate value (typical 0 to 2000)
-        unsigned int _TimeAcq = serialRead();   // Wait for an incoming Acquisition Time value in seconds (0 to 4294967295)
-        sensorOutputRead(_DataRate, _TimeAcq);  // Run RDGO_RDTO Function with 2 last arguments
+        sensorOutputRead();  // Run RDGO_RDTO Function with 2 last arguments
         break;
       }
 
@@ -310,7 +308,7 @@ void mainLoop2() {
 
     /* CHECK EVB VERSION */
     case 17:
-      ARDUINO_OUTPUT.println(EVB_Version);
+      ARDUINO_OUTPUT.println(EVB_VERSION);
       break;
 
     /* READ ALL SYSTEM REGISTER */
@@ -394,7 +392,7 @@ String sensorUID_2() {
   unsigned long Sensor_UID_Reg = EVB.ReadSR(0x03);  // Read UID stocked at the address 0x03 of the system register
   String Sensor_UID_full = "";
 
-  if (ProductName == "AXO215") {        // Case if the sensor is an AXO215
+  if (ProductName == "AXO315" || ProductName == "GYPRO4100") {        // Case if the sensor is an AXO215
     Sensor_UID_Reg &= 0x00FFFFFE;
     Sensor_UID_Reg = Sensor_UID_Reg >> 1;
     Sensor_UID_full = Sensor_UID_Reg;
@@ -476,7 +474,7 @@ unsigned long SENSOR_TYPE() {
   else {
     Sensor_Type = 1;
   }
-  return (Sensor_Type);     // return the configuration (0 = AXO215 ; 1 = GYPRO3300S)
+  return (Sensor_Type);     // return the configuration (0 = AXO215 ; 1 = GYPRO3300)
 }
 
 /////////////////////////////////////////////////////////////
@@ -489,12 +487,18 @@ unsigned long SENSOR_TYPE() {
 String sensorProductName_2() {
   String Product_Name = "";
   unsigned long Sensor_Type = SENSOR_TYPE();
-  if (Sensor_Type == 0) {
-    Product_Name = "AXO215";
+
+  if(EVB_VERSION == 30){
+    if (Sensor_Type == 0) {
+      Product_Name = "AXO315";
+    }
+    else {
+      Product_Name = "GYPRO4100";
+    }
   }
-  else {
-    Product_Name = "GYPRO3300S";
-  }
+else{
+      Product_Name = "GYPRO3300";
+}
 
   return (Product_Name);
 }

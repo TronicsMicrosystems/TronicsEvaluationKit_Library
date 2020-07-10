@@ -1,13 +1,13 @@
 /****************************************************************************
 
-                FIRMWARE 2.2 for ARDUINO M0          //////////  //
+                FIRMWARE 2.3 for ARDUINO M0          //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
-                 for Evaluation Tool 2.2             //  //////////
+                 for Evaluation Tool 2.3             //  //////////
 
-     Copyright (C) 2018 by Tronics Microsystems
+     Copyright (C) 2020 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -26,11 +26,11 @@
 ****************************************************************************/
 
 /**
-   @file G2300_G3300_Features.ino
+   @file G2300_Features.ino
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 23 August 2018
-   @version : 2.2
-   @brief File containing GYPRO® 2300 and 3300 features for EvalutationTool file.
+   @date 02 July 2020
+   @version : 2.3
+   @brief File containing GYPRO® 2300 features for EvalutationTool file.
    @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
 */
 
@@ -79,9 +79,7 @@ void mainLoop1() {
   switch (serialRead()) {
     /* RDGO + RDTO + ST : Return Rate, Temperature and Self Test values */
     case 1 : {
-        unsigned int _DataRate = serialRead();  // Wait for an incoming Data Rate value (typical 0 to 2000)
-        unsigned int _TimeAcq = serialRead();   // Wait for an incoming Acquisition Time value in seconds (0 to 4294967295)
-        sensorOutputRead(_DataRate, _TimeAcq);  // Run RDGO_RDTO Function with 2 last arguments
+        sensorOutputRead();  // Run RDGO_RDTO Function with 2 last arguments
         break;
       }
 
@@ -272,7 +270,7 @@ void mainLoop1() {
 
     /* CHECK EVB VERSION */
     case 17:
-      ARDUINO_OUTPUT.println(EVB_Version);
+      ARDUINO_OUTPUT.println(EVB_VERSION);
       break;
 
     /* READ ALL SYSTEM REGISTER */
@@ -413,7 +411,6 @@ String sensorUID_1() {
   return (Sensor_UID_full);                 // Return UID of the GYPRO (The same written on the sensor)
 }
 
-
 /////////////////////////////////////////////////////////////
 //                                                         //
 //                READ THE TYPE OF THE GYPRO               //
@@ -422,14 +419,7 @@ String sensorUID_1() {
 /////////////////////////////////////////////////////////////
 
 unsigned long sensorType() {
-  unsigned long SystemRegister_0A = EVB.ReadSR(0x0A); // Read System Register at Address 0x0A
-  SystemRegister_0A &= 0xFC000000;                    // Bitmask to keep bit 26 to 31
-  SystemRegister_0A = SystemRegister_0A >> 26;        // Bitshift
-
-  unsigned long Sensor_Config = 0;                    // Declare config variable
-  if (SystemRegister_0A == 19) {                      // If the register is equal to 19 => Gypro 2300, else if equal to 60 => Gypro 3300
-    Sensor_Config = 1;
-  }
+  unsigned long Sensor_Config = 0;
   return (Sensor_Config);                              // Return Sensor_config (0 = 2300 ; 1 = 3300)
 }
 
@@ -449,16 +439,13 @@ unsigned long sensorConfig() {
 
 /////////////////////////////////////////////////////////////
 //                                                         //
-//              READ THE UID (SERIAL NUMBER)               //
-//                   OF THE GYPRO MEMS                     //
+//                READ THE GYPRO CONFIG                    //
 //                                                         //
 /////////////////////////////////////////////////////////////
 
 String sensorProductName_1() {
   String Product_Name = "";
 
-  unsigned long Sensor_Type = sensorType();
-  if (Sensor_Type == 0) {
     unsigned long Sensor_Config = sensorConfig();
     if (Sensor_Config == 0) {
       Product_Name = "GYPRO2300";
@@ -466,10 +453,6 @@ String sensorProductName_1() {
     else {
       Product_Name = "GYPRO2300LD";
     }
-  }
-  else {
-    Product_Name = "GYPRO3300";
-  }
 
   return (Product_Name);
 }
