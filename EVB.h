@@ -1,13 +1,13 @@
 /****************************************************************************
 
-                FIRMWARE 2.3 for ARDUINO M0          //////////  //
+                 FIRMWARE 2.3 for ARDUINO            //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
                  for Evaluation Tool 2.3             //  //////////
 
-     Copyright (C) 2020 by Tronics Microsystems
+     Copyright (C) 2021 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -28,7 +28,7 @@
 /**
    @file EVB.h
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 02 July 2020
+   @date 29 March 2021
    @version : 2.3
    @brief File containing header code for EvalutationTool library.
    @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
@@ -55,7 +55,7 @@ extern uint16_t  Transfert_Time;
 class EVBClass {
 public:	
 	static void Init(Serial_ ArduinoOutput, uint16_t EvbVersion);
-  //static void Init(Uart ArduinoOutput); // Uncomment to use RS422 port with Arduino M0
+  //static void Init(HardwareSerial ArduinoOutput, uint16_t EvbVersion);
   
   static void Startup_Initialization(uint16_t EVB_Version);
 	

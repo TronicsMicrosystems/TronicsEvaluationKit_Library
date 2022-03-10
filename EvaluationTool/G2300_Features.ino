@@ -1,13 +1,13 @@
 /****************************************************************************
 
-                FIRMWARE 2.3 for ARDUINO M0          //////////  //
+                 FIRMWARE 2.3 for ARDUINO            //////////  //
                    EVB 2.0, 2.1 and 3.0              //      //  //
                   TRONIC'S MICROSYSTEMS              //  //  //  //
                http://www.tronicsgroup.com/          //  //  //  //
                This Firmware is optimised            //  //      //
                  for Evaluation Tool 2.3             //  //////////
 
-     Copyright (C) 2020 by Tronics Microsystems
+     Copyright (C) 2021 by Tronics Microsystems
 
      This file is part of Tronics Evaluation Tool.
 
@@ -28,7 +28,7 @@
 /**
    @file G2300_Features.ino
    @author Loïc Blanchard (loic.blanchard@tronicsgroup.com)
-   @date 02 July 2020
+   @date 29 March 2021
    @version : 2.3
    @brief File containing GYPRO® 2300 features for EvalutationTool file.
    @see https://github.com/TronicsMicrosystems/TronicsEvaluationKit_Library
